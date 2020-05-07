@@ -1,0 +1,47 @@
+iv_quanti = pd.DataFrame()
+df_iv_quanti = pd.DataFrame()
+for i in vars_quanti:
+    aux_var = 'cat_' + i
+    aux_iv = calc_iv(df_cat_quanti,aux_var,'target')
+    df_iv_quanti = pd.concat([df_iv_quanti,aux_iv[0]],axis = 0)
+    
+    aux_df_iv = pd.DataFrame({'var':[i]
+                              ,'var_cat':[aux_var]
+                              ,'IV':aux_iv[1]})
+    
+    iv_quanti = pd.concat([iv_quanti,aux_df_iv],axis = 0)
+    
+iv_quali = pd.DataFrame()
+df_iv_quali = pd.DataFrame()
+for i in vars_quali:
+    aux_var = 'cat_' + i
+    aux_iv = calc_iv(df_cat_quali,aux_var,'target')
+    df_iv_quali = pd.concat([df_iv_quali,aux_iv[0]],axis = 0)
+    
+    aux_df_iv = pd.DataFrame({'var':[i]
+                              ,'var_cat':[aux_var]
+                              ,'IV':aux_iv[1]})
+    
+    iv_quali = pd.concat([iv_quali,aux_df_iv],axis = 0)
+    
+iv_bin = pd.DataFrame()
+df_iv_bin = pd.DataFrame()
+for i in vars_bin:
+    aux_var = 'cat_' + i
+    aux_iv = calc_iv(df_cat_bin,aux_var,'target')
+    df_iv_bin = pd.concat([df_iv_bin,aux_iv[0]],axis = 0)
+    
+    aux_df_iv = pd.DataFrame({'var':[i]
+                              ,'var_cat':[aux_var]
+                              ,'IV':aux_iv[1]})
+    
+    iv_bin = pd.concat([iv_bin,aux_df_iv],axis = 0)
+    
+    
+iv_vars = pd.concat([iv_quanti, iv_quali, iv_bin], axis = 0)
+
+iv_vars.sort_values('IV', ascending = False, inplace = True)
+
+iv_vars.reset_index(drop = True, inplace = True)
+
+iv_vars    
