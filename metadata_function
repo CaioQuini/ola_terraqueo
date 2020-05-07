@@ -1,0 +1,78 @@
+def Metadados(dataframe, target_var, id_vars, vars_quanti, vars_quali, vars_bin): 
+    '''
+    Cria um novo df com pricipais caracteristicas do df inicial,
+    como tipo de variaveis, quantidade de valores diferentes, 
+    quantidade de missings, etc.
+    
+    Usa como entrada o df original, a variavel alvo, as vars utilizadas como ID, 
+    a lista de variaveis quantitativas, ou continuas e as variaveis qualitativas, 
+    binarias ou nao
+    '''
+
+    
+    '''
+    
+    Entradas: DF original
+              var resposta
+              vars ID
+              lista de vars quanti
+              lista de vars quali
+              
+    Saida:    DF com proprieades do DF iriginal
+    
+    '''
+    
+    train = dataframe
+
+    missing = []
+    data = []
+    dtype = []
+    card = []
+    lista_mod = []
+    
+    for f in train.columns:
+
+        missing=train[f].isnull().sum()
+        
+        # Definindo o papel das variáveis:
+        if f == target_var: #Variável Resposta
+            role = 'target'
+        elif f in id_vars:
+            role = 'id'          
+        else:
+            role = 'input'
+
+        # Definindo o tipo das variáveis da tabela de entrada
+        dtype = train[f].dtype
+        
+        # Quantidade de domínios distintos para cada variável do tipo ordinal e nominal
+        card = train[f].value_counts().shape[0]
+        
+        # Definindo lista que a var se encaixa('quanti' ou 'quali')
+        if f in list(vars_quanti):
+            lista_mod = 'quanti'
+        elif f in list(vars_quali):
+            lista_mod= 'quali'
+        elif f in list(vars_bin):
+            lista_mod= 'binaria'
+        else: 
+            lista_mod = 'outra'
+
+        # Criando a lista com todo metadados
+        f_dict = {'Variaveis': f
+                  ,'Role': role
+                  ,'Type': dtype
+                  ,'Missing': missing
+                  ,'Cardinalidade': card
+                  ,'Lista_mod': lista_mod}
+        data.append(f_dict)
+
+    meta = pd.DataFrame(data, columns=['Variaveis'
+                                       ,'Role'
+                                       ,'Type'
+                                       ,'Missing'
+                                       ,'Cardinalidade'
+                                       ,'Lista_mod'])
+
+
+    return meta 
