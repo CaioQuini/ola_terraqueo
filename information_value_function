@@ -1,0 +1,23 @@
+def calc_iv(df, var, target):
+    lst = []
+    for i in range(df[var].nunique()):
+        val = list(df[var].unique())[i]
+        lst.append({
+            'value': val,
+            'all': df[df[var] == val].count()[var],
+            'good': df[(df[var] == val) & (df[target] == 0)].count()[var],
+            'bad': df[(df[var] == val) & (df[target] == 1)].count()[var]
+        })
+        
+    dset = pd.DataFrame(lst)
+    dset['var'] = var
+    dset['distr_good'] = dset['good'] / dset['good'].sum()
+    dset['distr_bad'] = dset['bad'] / dset['bad'].sum()
+    dset['woe'] = np.log(dset['distr_good'] / dset['distr_bad'])
+    dset = dset.replace({'woe': {np.inf: 0, -np.inf: 0}})
+    dset['iv'] = (dset['distr_good'] - dset['distr_bad']) * dset['woe']
+    iv = dset['iv'].sum()
+    
+    #dset = dset.sort_values(by='WoE')
+    
+    return dset,iv
