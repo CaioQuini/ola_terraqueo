@@ -1,0 +1,86 @@
+df_cat_quanti = df_raw[['target']]
+
+for i in vars_quanti:
+    
+    aux_var = 'cat_' + i
+    aux_bivar = pd.DataFrame()
+    print (aux_var)
+    df_cat_quanti[aux_var] = pd.qcut(df_raw[i], 4,labels=False, duplicates = 'drop')
+
+    aux_bivar['evento'] = df_cat_quanti[[aux_var,'target']][df_cat_quanti.target == 1].groupby([aux_var]).sum().target
+    aux_bivar['pop'] = df_cat_quanti[[aux_var]].groupby(df_cat_quanti[aux_var]).count()
+    aux_bivar.loc[:,'taxa_evento'] = (aux_bivar.loc[:,'evento'] / aux_bivar.loc[:,'pop'])*100
+    aux_bivar['taxa_med'] = (aux_bivar.evento.sum()/aux_bivar['pop'].sum())*100
+    aux_bivar['var'] = i
+    aux_bivar['var_cat']= aux_var
+    aux_bivar['var_tipo'] = 'quanti'
+    aux_bivar.reset_index(drop = False, inplace = True)
+   
+    aux_bivar.columns = ['cat'
+                        ,'evento'
+                        ,'pop'
+                        ,'taxa_evento'
+                        ,'taxa_med' 
+                        ,'var'
+                        ,'var_cat'
+                        ,'var_tipo']
+    
+    print()
+    print(aux_bivar)
+    print()
+
+
+    df_bivar = pd.concat([df_bivar,aux_bivar], axis = 0)
+
+    
+    # Cria a janela
+    fig, ax1 = plt.subplots()
+
+    # Taxa de evento por categorias
+    color = 'tab:red'
+    plt.title(aux_var)
+    ax1.set_xlabel('faixas')
+    ax1.set_ylabel('taxa evento', color=color)
+    ax1.scatter(aux_bivar['cat'], aux_bivar['taxa_evento'], color=color, label = 'taxa evento')
+    ax1.tick_params(axis='y', labelcolor=color)
+    
+    
+    
+    #ylim
+    if aux_bivar['taxa_evento'].min() < 10:
+        bottom = 0
+    else:
+        bottom = round(aux_bivar['taxa_evento'].min() - 10)
+
+    if aux_bivar['taxa_evento'].max() > 90:
+        up = 100
+    else:
+        up = round(aux_bivar['taxa_evento'].max() + 10)
+        
+    plt.ylim(bottom,up)
+        
+        
+    for x,y in zip(aux_bivar['cat'], aux_bivar['taxa_evento']):
+
+        label = "{:.2f}".format(y)
+
+        # this method is called for each point
+        plt.annotate(label, # this is the text
+                     (x,y), # this is the point to label
+                     textcoords="offset points", # how to position the text
+                     xytext=(0,10), # distance from text to points (x,y)
+                     ha='center') # horizontal alignment can be left, right or center
+    
+    # Taxa de evento média
+    color = 'tab:green'
+    ax1.plot(aux_bivar['cat'], aux_bivar['taxa_med'], color=color, linestyle='dashed', label='taxa media de evento')
+
+    # Publico em cada categoria
+    ax2 = ax1.twinx()  # segundo eixo instanciado, com o primeiro 
+    color = 'tab:grey'
+    ax2.set_ylabel('pop', color=color)  
+    ax2.bar(aux_bivar['cat'], aux_bivar['pop'], color=color, alpha = 0.2, label = 'pulico por categoria')
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    #fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.show()
