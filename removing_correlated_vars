@@ -1,0 +1,12 @@
+vars_to_test = list(iv_vars['var_cat']) #lista de variáveis, em ordem de importância
+df_corr = df_to_corr[vars_to_test].corr().abs() #correlação entre as variâveis explicativas do dataset
+
+# Seleciona o 'triangulo' superior da matriz de correlação, acima da diagonal principal
+upper_corr = df_corr.where(np.triu(np.ones(df_corr.shape), k=1).astype(np.bool))
+
+# Seleciona as variáveis com correlação acima do limiar definido - 0.75 neste caso
+to_drop_vars = [column for column in upper_corr.columns if any(upper_corr[column] >= 0.75)]
+
+print(np.shape(to_drop_vars))
+
+print(to_drop_vars)
