@@ -1,0 +1,133 @@
+def calc_KS(model, X_test, y_test):
+    df_aux = pd.DataFrame({'evento':y_test})
+    df_aux['score'] = model.predict_proba(X_test)[:,1]
+    df_aux['faixa'] = pd.qcut(df_aux['score'], 10, labels=False, duplicates = 'drop')
+    df_aux_KS = pd.DataFrame()
+    df_aux_KS['evento'] = df_aux[['faixa','evento']][df_aux.evento == 1].groupby(['faixa']).sum().evento
+    df_aux_KS['pop'] = df_aux['faixa'].groupby(df_aux['faixa']).count()
+    df_aux_KS['tx_evento'] = df_aux_KS['evento']/df_aux_KS['pop'] 
+    df_aux_KS['n_evento'] = df_aux_KS['pop'] - df_aux_KS['evento']
+    df_aux_KS['evento_acum'] = np.cumsum(df_aux_KS.evento)
+    df_aux_KS['n_evento_acum'] = np.cumsum(df_aux_KS.n_evento)
+    df_aux_KS['pop_acum'] = np.cumsum(df_aux_KS['pop'])
+    df_aux_KS['tx_event_acum'] = df_aux_KS['evento_acum']/df_aux_KS['pop_acum'] 
+    df_aux_KS['tx_n_event_acum'] = df_aux_KS['n_evento_acum']/df_aux_KS['pop_acum'] 
+    df_aux_KS['KS'] = df_aux_KS['tx_event_acum'] - df_aux_KS['tx_n_event_acum']
+    df_aux_KS['percent_total_evento'] = df_aux_KS['evento_acum']/df_aux_KS['evento'].sum()
+    df_aux_KS.reset_index(drop = False, inplace = True)
+
+    df_aux_KS['faixa'] = [1,2,3,4,5,6,7,8,9,10]
+    return df_aux_KS
+    
+# KS plot
+
+# Cria a janela
+fig, ax1 = plt.subplots()
+
+# Taxa de evento por categorias
+# color = 'tab:red'
+plt.title('Conversão por faixa')
+ax1.set_xlabel('faixas')
+ax1.set_ylabel('taxa evento')
+
+color = 'tab:blue'
+ax1.plot(df_ks['faixa'], df_ks['tx_evento'], color=color, marker = 'o', linestyle='dashed', label='taxa de evento')
+ax1.tick_params(axis='y', labelcolor=color)
+
+
+
+#ylim
+if df_ks['tx_evento'].min() < 0.10:
+    bottom = 0
+else:
+    bottom = round(df_ks['tx_evento'].min() - 0.10)
+
+if df_ks['tx_evento'].max() > 0.90:
+    up = 1
+else:
+    up = round(df_ks['tx_evento'].max() + 0.10)
+
+plt.ylim(bottom,up)
+
+
+for x,y in zip(df_ks['faixa'], df_ks['tx_evento']):
+
+    label = "{:.2f}".format(y)
+
+    # this method is called for each point
+    plt.annotate(label, # this is the text
+                 (x,y), # this is the point to label
+                 textcoords="offset points", # how to position the text
+                 xytext=(0,10), # distance from text to points (x,y)
+                 ha='center') # horizontal alignment can be left, right or center
+
+# Taxa de evento acumulada
+color = 'tab:red'
+ax1.plot(df_ks['faixa'], df_ks['tx_event_acum'], color=color, marker = 'o', linestyle='dashed', label='taxa de evento acumulada')
+ax1.tick_params(axis='y', labelcolor=color)
+
+for x,y in zip(df_ks['faixa'], df_ks['tx_event_acum']):
+
+    label = "{:.2f}".format(y)
+
+    # this method is called for each point
+    plt.annotate(label, # this is the text
+                 (x,y), # this is the point to label
+                 textcoords="offset points", # how to position the text
+                 xytext=(0,10), # distance from text to points (x,y)
+                 ha='center') # horizontal alignment can be left, right or center
+
+
+# Publico em cada categoria
+ax2 = ax1.twinx()  # segundo eixo instanciado, com o primeiro 
+color = 'tab:grey'
+ax2.set_ylabel('pop')  
+ax2.bar(df_ks['faixa'], df_ks['pop'], color=color, alpha = 0.2, label = 'pulico por faixa')
+ax2.tick_params(axis='y', labelcolor=color)
+
+#fig.tight_layout()  # otherwise the right y-label is slightly clipped
+plt.show()
+
+# Cria a janela
+fig, ax1 = plt.subplots()
+
+# Taxa de evento por categorias
+# color = 'tab:red'
+plt.title('Percentual de eventos por faixa')
+ax1.set_xlabel('faixas')
+ax1.set_ylabel('percentual dos eventos')
+
+color = 'tab:red'
+ax1.plot(df_ks['faixa'], df_ks['percent_total_evento'], color=color, marker = 'o', linestyle='dashed', label='percentual dos eventos')
+ax1.tick_params(axis='y', labelcolor=color)
+
+
+
+#ylim
+bottom = round(df_ks['percent_total_evento'].min() - 0.20)
+up = round(df_ks['percent_total_evento'].max() + 0.20)
+
+
+
+
+for x,y in zip(df_ks['faixa'], df_ks['percent_total_evento']):
+
+    label = "{:.2f}".format(y)
+
+    # this method is called for each point
+    plt.annotate(label, # this is the text
+                 (x,y), # this is the point to label
+                 textcoords="offset points", # how to position the text
+                 xytext=(0,10), # distance from text to points (x,y)
+                 ha='center') # horizontal alignment can be left, right or center
+
+
+# Publico em cada categoria
+ax2 = ax1.twinx()  # segundo eixo instanciado, com o primeiro 
+color = 'tab:grey'
+ax2.set_ylabel('pop')  
+ax2.bar(df_ks['faixa'], df_ks['pop_acum'], color=color, alpha = 0.2, label = 'pulico por faixa')
+ax2.tick_params(axis='y', labelcolor=color)
+plt.ylim(bottom,up)
+#fig.tight_layout()  # otherwise the right y-label is slightly clipped
+plt.show()
