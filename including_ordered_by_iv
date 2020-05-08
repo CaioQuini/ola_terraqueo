@@ -1,0 +1,17 @@
+df_model_1 = df_raw[['target']]
+for var in list(iv_vars['var_cat']):
+    print (var)
+    var_prefix = var + '_'
+    if var in df_cat_quanti.columns:
+        print ('quanti')
+        aux_df = pd.get_dummies(df_cat_quanti[var], columns = var, prefix = var_prefix)
+        df_model_1 = pd.concat([df_model_1, aux_df], axis = 1)
+    elif var in df_cat_quali.columns:
+        print ('quali')
+        aux_df = pd.get_dummies(df_cat_quali[var], columns = var, prefix = var_prefix)
+        df_model_1 = pd.concat([df_model_1, aux_df], axis = 1)
+    else:
+        print ('bin')
+        #aux_df.loc[:,var] = df_cat_bin.loc[:,var].apply(lambda x: 1 if x=='yes' else 0)
+        aux_df = df_cat_bin[[var]]
+        df_model_1 = pd.concat([df_model_1, aux_df], axis = 1)
